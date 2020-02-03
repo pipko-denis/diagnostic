@@ -1,25 +1,24 @@
 <template>
-    <div>
-      
+    <div>     
 
-<v-navigation-drawer v-model="drawer" app >
-      <v-list dense>
-        <v-list-item link v-for="(item,i) in menuItems" text :key="`navmenuitem${i}`" :to="item.route">
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{item.title}}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+      <v-navigation-drawer v-model="drawer" app >
+        <v-list dense>
+          <v-list-item link v-for="(item,i) in menuItems" text :key="`navmenuitem${i}`" :to="item.route">
+            <v-list-item-action>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>{{item.title}}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
 
-      </v-list>
-    </v-navigation-drawer>
+        </v-list>
+      </v-navigation-drawer>
 
-    <v-app-bar app color="indigo" dark >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title>Диагностика СПС</v-toolbar-title>
-    </v-app-bar>
+      <v-app-bar app color="indigo" dark >
+        <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+        <v-toolbar-title>Диагностика СПС</v-toolbar-title>
+      </v-app-bar>
      
     </div>
 </template>
@@ -34,6 +33,7 @@ import { mdiCarShiftPattern } from '@mdi/js'
 import { mdiExitToApp } from '@mdi/js'
 import { mdiPower } from '@mdi/js';
 import { mdiBusMultiple } from '@mdi/js';
+import { mdiChartAreaspline } from '@mdi/js';
 
     export default {
         name: 'app-header',
@@ -50,12 +50,6 @@ import { mdiBusMultiple } from '@mdi/js';
             isUserAuth: function(){
                 return this.$store.getters.getIsAuth
             },
-            btnTest: function(){return{
-                        title:'Test',
-                        route:'/Trains',
-                        icon: mdiBus,
-                        needAuth: true,
-                    }},
             menuItems: function(){
                 if (this.isUserAuth){                    
                     return [                    
@@ -83,6 +77,12 @@ import { mdiBusMultiple } from '@mdi/js';
                             icon: mdiCarShiftPattern,
                             needAuth: true,
                         },          
+                        {
+                            title:'Диаграммы',
+                            route:'/diagramms',
+                            icon: mdiChartAreaspline,
+                            needAuth: true,
+                        }, 
                         {
                             title:'Единицы измерения',
                             route:'/diag_dims',

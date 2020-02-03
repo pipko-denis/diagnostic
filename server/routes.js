@@ -41,8 +41,6 @@ module.exports = app => {
 
   app.get('/machparam/diag/:machine_id', machParamContoller.getParamsForDiag);  
 
-  app.get('/machparam/data/:machine_id/:extCode/:extParam/:dtBeg/:dtEnd', machParamContoller.getDiagData);    
-
   app.post('/machparam/', machParamContoller.saveParam);
 
   app.post('/machparam/machine/:machine_id', machParamContoller.saveParamMachine);
@@ -52,6 +50,12 @@ module.exports = app => {
   app.delete('/machparam/:id', machParamContoller.delMachParam)
 
 ////////////////////////////////////////////////////////////////////////
+
+  app.get('/diagramm/data/:machine_id/:extCode/:extParam/:dtBeg/:dtEnd', DiagrammContoller.getDiagData);
+
+  app.post('/diagramm/dates', DiagrammContoller.getDates);
+
+///////////////////////////////////////////////////////////////////////
 
   app.get('/dicts/machines', dictsController.getMachines)
 

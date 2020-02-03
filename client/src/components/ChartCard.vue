@@ -3,7 +3,7 @@
     <v-card-title>
         <v-layout wrap>
           <v-flex sm12 md6 class="pr-1 pl-1" v-if="propShowSelecors">
-              <v-autocomplete v-model="machTypeId" :items="compMachTypes" label="Тип СПС" item-value="id" item-text="full_name" @change="getDiagTables()"  clearable >
+              <v-autocomplete v-model="machTypeId" :items="compMachTypes" label="Тип СПС" item-value="id" item-text="full_name"  clearable >
                 <template slot="selection" slot-scope="data">
                   {{ data.item.full_name }}
                 </template> 
@@ -14,7 +14,7 @@
           </v-flex> 
 
           <v-flex sm12 md6 class="pr-1 pl-1">
-              <v-autocomplete v-model="machineId" :items="compMachinesByType" label="Наименование СПС" item-value="id" item-text="full_name" @change="getDiagTables()"  clearable >
+              <v-autocomplete v-model="machineId" :items="compMachinesByType" label="Наименование СПС" item-value="id" item-text="full_name"  clearable @change="getDiagTables()">
                 <template slot="selection" slot-scope="data">
                   {{data.item.full_name}}
                 </template> 
@@ -341,19 +341,22 @@
       },
 
       getDataForChart(){
-/*        
-        if (!this.tableProp){
-          alert("Необходимо выбрать диагностический параметр!")
-          return;
-        }
+
         if (!this.machineId){
           alert("Необходимо выбрать СПС!")
           return;
         }
-        if (!this.dateRange){
-          alert("Необходимо выбрать тип СПС!")
+
+        if (!this.tableProp){
+          alert("Необходимо выбрать диагностический параметр!")
           return;
         }
+
+        if ((!this.dateRange)||(! Array.isArray(this.dateRange)) || (this.dateRange.length == 0)){
+          alert("Необходимо указать диапазон дат!")
+          return;
+        }
+
         var tableParam = _.find(this.diagTableParams, {id: this.tableProp})
         console.info('getDataForChart',this.tableProp, tableParam,this.machineId,this.dateRange);
 
@@ -361,7 +364,11 @@
           alert("Не удалось получить данные по параметру по идентификатору!")
           return;
         }
-*/        
+        
+        let dtEnd = this.dateRange[0];
+        if (this.dateRange.length > 1){
+          dtEnd = this.dateRange[1];
+        }
 
         this.diagData = []
         this.series = []
@@ -369,8 +376,9 @@
         this.$store.commit('SET_PROCESSING',true)  
         this.$store.commit('SET_ERROR_CLEAN')  
         try{                      
-          //MachParamsService.getDiagData(this.machineId, tableParam.ext_code, tableParam.ext_n_param, this.dateRange[0], this.dateRange[1])
-          MachParamsService.getDiagData(1750, 115, 2, '2019-01-01', '2019-12-01')
+          
+          MachParamsService.getDiagData(this.machineId, tableParam.ext_code, tableParam.ext_n_param, this.dateRange[0], dtEnd)
+          //MachParamsService.getDiagData(1750, 115, 2, '2019-01-01', '2019-12-01')
             .then(result => {      
                 
                 this.$store.commit('SET_PROCESSING',false)   
@@ -433,18 +441,41 @@
         if (this.machineId) this.getMachParamsForDiag(this.machineId);
       },
 
-      //cloneElem(elem) { return Object.assign({},{name: elem.tbl_name})},      
-
       getEventsForMachine(){        
-        var tables = _.uniqBy(this.diagTableParams, 'tbl_name');     
-        
-        //var doubleDD = (x) => x + 'DDD';
+        var tables = _.uniqBy(this.diagTableParams, 'tbl_name');           
 
         var cloneElem = (elem) =>  Object.assign({},{name: elem.tbl_name, dt: elem.dt_field});
+        var cloneArr = tables.map(cloneElem);        
+        //console.log(tables,cloneArr,this.machineId);
+        let machine = _.find(this.$store.getters.getMachines ,{id: this.machineId}) 
+        if ((!machine)||(! machine.cur_imei)){
+          console.log("Machine or it's imei not founded")
+          return;
+        }
 
-        var cloneArr = tables.map(cloneElem)
-
-        console.log(tables,cloneArr);
+        this.$store.commit('SET_PROCESSING',true)
+        this.$store.commit('SET_ERROR_CLEAN')  
+        try{                      
+          MachParamsService.getDatesForDiag(machine.cur_imei,cloneArr)
+            .then(result => {      
+                
+                this.$store.commit('SET_PROCESSING',false)   
+                this.$store.commit('SET_MESSAGE',"Список дат для машины "+this.machineId+" загружен.")
+                console.info('getEventsForMachine result',result.data) 
+                //this.diagTableParams = result.data 
+              }
+            )
+            .catch(err => {                     
+                this.$store.commit('SET_PROCESSING',false)     
+                this.$store.commit('SET_ERROR',err)    
+                console.info('getEventsForMachine error 1', err)                     
+              }
+  
+            )
+          }catch(err){
+            this.$store.commit('SET_PROCESSING',false)
+            console.info('getEventsForMachine error 2', err)            
+          }
       },
 
       getMachParamsForDiag(machine_id){
@@ -508,14 +539,14 @@
           this.tableId = null;
         }
       },
-        tableProp(newValue, oldValue) {
-          if (newValue){
-            this.events = [new Date().toISOString().slice(10)]
-          }else{
-            this.events = []
-          }
-          console.log('events', oldValue,newValue,this.events)
-        },
+      tableProp(newValue, oldValue) {
+        if (newValue){
+          this.events = [new Date().toISOString().slice(10)]
+        }else{
+          this.events = []
+        }
+        //console.log('events', oldValue,newValue,this.events)
+      },
 
     },
 

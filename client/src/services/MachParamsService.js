@@ -26,8 +26,13 @@ export default {
     return Api().get('/machparam/diag/' + machineid)
   },
 
+  getDatesForDiag(imei,tablesArr){
+    console.log('SERVICE getDatesForDiag', imei, tablesArr)
+    return Api().post('/diagramm/dates', {imei: imei, tables: tablesArr});
+  },
+
   getDiagData(machine_id, extCode, extParam, dtBeg, dtEnd){
-    return Api().get('/machparam/data/' + machine_id + '/' + extCode + '/' + extParam + '/' + dtBeg + '/' + dtEnd)
+    return Api().get('/diagramm/data/' + machine_id + '/' + extCode + '/' + extParam + '/' + dtBeg + '/' + dtEnd)
   },
 
   saveParamMachine(credentials){

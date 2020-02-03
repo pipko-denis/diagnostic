@@ -8,6 +8,7 @@ import SprTypes from '../views/SprTypes.vue'
 import DiagTables from '../views/DiagTables.vue'
 import DiagMachines from '../views/DiagMachines.vue'
 import DiagDims from '../views/DiagDims.vue'
+import Diagramms from '../views/Diagramms.vue'
 /*
 diag_machines
 diag_dims
@@ -41,6 +42,11 @@ const routes = [
     name: 'diag_machines',
     component: DiagMachines
   },
+  {
+    path: '/diagramms',
+    name: 'diagramms',
+    component: Diagramms
+  },    
   {
     path: '/diag_dims',
     name: 'diag_dims',
