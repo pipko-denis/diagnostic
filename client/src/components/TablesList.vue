@@ -55,17 +55,17 @@
                 <v-flex sm1 class="pr-1 pl-1" >
                   <v-text-field readonly v-model="editedItem.id" label="ID"></v-text-field>
                 </v-flex>  
-                <v-flex sm10 class="pr-1 pl-1">
+                <v-flex sm11 class="pr-1 pl-1">
                   <v-text-field v-model="editedItem.group_name" label="Пользовательское наименование таблицы (группы параметров)"></v-text-field>
-                </v-flex>
-                <v-flex sm1 class="pr-1 pl-1">
-                  <v-btn fab small color="primary" @click="getTableUserName()"><v-icon>{{icoQuest}}</v-icon></v-btn>
-                </v-flex>
+                </v-flex>                
                 <v-flex sm1 class="pr-1 pl-1">
                   <v-text-field v-model="editedItem.ext_code" label="Код пакета"></v-text-field>
                 </v-flex>
-                <v-flex sm11 class="pr-1 pl-1">
+                <v-flex sm10 class="pr-1 pl-1">
                   <v-text-field v-model="editedItem.tbl_name" label="Наименование таблицы для получения данных"></v-text-field>
+                </v-flex>
+                <v-flex sm1 class="pr-1 pl-1">
+                  <v-btn fab small color="primary" @click="getTableUserName()"><v-icon>{{icoQuest}}</v-icon></v-btn>
                 </v-flex>                
                 <v-flex xs11 sm6 md4 class="pr-1 pl-1">
                   <v-text-field v-model="editedItem.dt_field" label="Поле с датой"></v-text-field>

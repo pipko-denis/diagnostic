@@ -5,6 +5,40 @@
     <v-toolbar flat color="white">      
       <v-text-field v-model="search" :append-icon=icoSearch label="Поиск" clearable single-line hide-details></v-text-field>   
       <v-spacer></v-spacer> 
+      
+
+      <v-dialog v-model="dialogCopyParams" persistent max-width="750" >
+        <v-card>
+
+        <v-toolbar dark color="primary">
+          <v-btn icon dark @click="closeCodyDialog">
+            <v-icon>{{icoClose}}</v-icon>
+          </v-btn>
+          <v-toolbar-title>Копирование параметров между типами СПС</v-toolbar-title> 
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="copyParams" :disabled="(!copyMachTypeFinal)">Копировать</v-btn> 
+          </v-toolbar-items>
+        </v-toolbar> 
+          <v-card-text class="pt-5">
+              <v-layout flex-column>
+                <v-flex sm12 class="pr-1 pl-1" >
+                  <v-text-field readonly v-model="copyMachTypeFullName" label="Исходынй тип СПС"></v-text-field>
+                </v-flex>                 
+                <v-flex sm12 class="pr-1 pl-1" >
+                  <v-autocomplete v-model="copyMachTypeFinal" :items="compMachTypes" label="Тип СПС для вставки параметров" item-value="id" item-text="full_name"  clearable >
+                    <template slot="selection" slot-scope="data">
+                      {{ data.item.full_name }}
+                    </template> 
+                    <template slot="item" slot-scope="data">
+                      {{ data.item.full_name }}
+                    </template>  
+                  </v-autocomplete>
+                </v-flex>  
+              </v-layout>              
+          </v-card-text>
+        </v-card>
+      </v-dialog>      
 
       <v-dialog v-model="dialog" fullscreen hide-overlay transition>
         <v-card>
@@ -63,6 +97,7 @@
 
     <template v-slot:item.action="{ item }">
       <v-icon small class="mr-2" @click="editItem(item)">{{icoEdit}}</v-icon>
+      <v-icon small class="mr-2" @click="copyItemsParams(item)">{{icoCopy}}</v-icon>      
     </template>
 
     </v-data-table>
@@ -78,6 +113,7 @@ import { mdiPencil } from '@mdi/js'
 import { mdiDelete } from '@mdi/js'
 import { mdiClose } from '@mdi/js'
 import { mdiFormatListBulleted } from '@mdi/js'
+import { mdiContentDuplicate } from '@mdi/js';
 
 import DiagParamsList from '@/components/DiagParamsList'
 //import TableParamsService from '@/services/TableParamsService'
@@ -97,6 +133,9 @@ export default {
     data: () => ({
       selectedMachTypeId: -1,
       dialog: false,
+      dialogCopyParams: false,
+      copyMachType: null,
+      copyMachTypeFinal: null,
       search: null,
       icoSearch: mdiMagnify,
       icoAdd: mdiPlus,
@@ -104,6 +143,7 @@ export default {
       icoEdit: mdiPencil,
       icoClose: mdiClose,
       icoRadioList: mdiFormatListBulleted,
+      icoCopy: mdiContentDuplicate,
       headers: [
         {text: 'ID',align: 'left',sortable: true, value: 'id'},
         { text: '', align: 'left',value: 'action', sortable: false },
@@ -150,6 +190,24 @@ export default {
             //console.info('machTypes', this.$store.getters.getMachTypes)
             return this.$store.getters.getMachTypes
         },
+
+        copyMachTypeFullName() {
+          if (this.copyMachType) return this.copyMachType.type +" "+this.copyMachType.modification 
+          return "Исходный тип для копирования не выбран"
+        },
+        
+      compMachTypes() {
+        var result = []
+        this.machTypes.forEach(element => { 
+          if (element.modification)
+            element.full_name = element.id + ": " + element.type+"-"+element.modification;
+          else   
+            element.full_name = element.id + ": " + element.type;
+          result.push(element);
+        });
+        //console.log('compMachTypes', result)
+        return result;
+      },        
     },
 
     watch: {
@@ -187,6 +245,11 @@ export default {
         this.dialog = true
       },
 
+      copyItemsParams(item){
+        this.dialogCopyParams = true
+        this.copyMachType = item
+      },
+
 
 
       close () {
@@ -196,6 +259,16 @@ export default {
           this.editedIndex = -1
           this.selectedMachTypeId = -1
         }, 300)
+
+      },
+
+      closeCodyDialog(){
+        this.dialogCopyParams = false;
+        
+      },
+
+      copyParams(){
+        this.dialogCopyParams = false;
       },
 
       save () {        
@@ -218,10 +291,10 @@ export default {
 
         if (this.lstDelParams) {          
           this.lstDelParams.forEach(delParam => {
-            console.log('DEL_DIAG_MACH_TYPE_PARAM', delParam)
+            //console.log('DEL_DIAG_MACH_PARAMETER', delParam)
             
             if (delParam.id) {
-              this.$store.dispatch('DEL_DIAG_MACH_TYPE_PARAM', delParam.id)
+              this.$store.dispatch('DEL_DIAG_MACH_PARAMETER', delParam)
             }
             
           });
