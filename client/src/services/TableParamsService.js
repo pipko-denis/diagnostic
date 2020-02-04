@@ -23,6 +23,11 @@ export default {
     return Api().delete('/params/' + paramid)
   },
 
+  getTableUserName(name) {
+    return Api().get('/tables/username/' + name)
+  },
+
+  
 
 
 
