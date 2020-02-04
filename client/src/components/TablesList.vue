@@ -222,6 +222,7 @@ export default {
                 this.$store.commit('SET_MESSAGE',"Пользовательское наименование таблицы получено")
                 if ((result.data)&&(result.data.length > 0)){
                   this.editedItem.group_name = result.data[0].obj_description  
+                  this.editedItem.ext_code = result.data[0].ext_code
                 }else{
                     alert('Не удалось получить пользовательское наимнование для таблицы "' + this.editedItem.tbl_name + '". ')
                 }

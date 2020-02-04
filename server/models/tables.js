@@ -155,7 +155,7 @@ module.exports.getTableUserName = function (name) {
   return new Promise(function (resolve, reject) {
     pool.connect().then(client => {
       client
-        .query( " SELECT obj_description(to_regclass('public."+name+"'), 'pg_class');")
+        .query(" SELECT obj_description(to_regclass('public." + name +"'), 'pg_class'),(select max(ext_code)+1 from public.askr_diag_table) as ext_code;")
         .then(res => {
           client.release();
           console.log('getTableUserName row count', res.rowCount);
