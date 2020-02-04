@@ -97,6 +97,33 @@ module.exports = {
       res.status(500).send(`Ошибка получения данных!`);
     }
 
-  }
+  },
 
+
+  getTableUserName(req, res) {
+
+    if (!req.params['name']) {
+      res.status(400);
+      res.send({ message: `Переданы пустые данные для получения пользовательского наименования таблицы!` });
+      return;
+    }
+
+    console.info(moduleName, 'getTableUserName begin', req.params['name']);
+
+    try {
+      tables.getTableUserName(req.params['name'])
+        .then(resolve => {
+          console.log(moduleName, 'getTableUserName result', resolve);
+          res.send(resolve)
+        })
+        .catch(reject => {
+          res.status(500);
+          res.send({ message: reject });
+        })
+    } catch (err) {
+      console.log(moduleName, `ERROR`, err)
+      res.status(500).send(`Ошибка получения данных!`);
+    }
+
+  }
 }

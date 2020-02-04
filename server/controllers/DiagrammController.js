@@ -1,4 +1,4 @@
-//const machparams = require('../models/machparams')
+const machparams = require('../models/machparams')
 
 const moduleName = 'DiagrammContoller';
 

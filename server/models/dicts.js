@@ -6,7 +6,7 @@ module.exports.getMachines = function () {
     console.log('SELECT askr_machines.id, predpr, tip, spr_machine_type.type,spr_machine_type.modification, zav_nomer, nomer_8zn, cur_imei, detail, espul_id, last_loc_id, last_loc_gps_datetime, spr_organizations.shortname, spr_machine_type.classification	' +
       ' ,(SELECT COUNT(id) FROM public.askr_diag_machine Where ( machine_id = askr_machines.id) ) as cnt_params ' +
       ' FROM public.askr_machines left join spr_machine_type on spr_machine_type.id = askr_machines.tip left join public.spr_organizations on spr_organizations.id = askr_machines.predpr ' +
-      " Where spr_machine_type.type like '%ЩОМ%' or spr_machine_type.type like '%УК%' or spr_machine_type.type like '%ССГ%' or spr_machine_type.type like '%АДМ%' " +
+      " Where spr_machine_type.type like '%ЩОМ%' or spr_machine_type.type like '%УК%' or spr_machine_type.type like '%АМ%' or spr_machine_type.type like '%ССГ%' or spr_machine_type.type like '%АДМ%' " +
       ' order by spr_machine_type.type, spr_machine_type.modification, askr_machines.zav_nomer;')
 
     pool.connect().then(client => {
@@ -14,7 +14,7 @@ module.exports.getMachines = function () {
         .query('SELECT askr_machines.id, predpr, tip, spr_machine_type.type,spr_machine_type.modification, zav_nomer, nomer_8zn, cur_imei, detail, espul_id, last_loc_id, last_loc_gps_datetime, spr_organizations.shortname, spr_machine_type.classification	' +        
         ' ,(SELECT COUNT(id) FROM public.askr_diag_machine Where ( machine_id = askr_machines.id) ) as cnt_params ' +
           ' FROM public.askr_machines left join spr_machine_type on spr_machine_type.id = askr_machines.tip left join public.spr_organizations on spr_organizations.id = askr_machines.predpr '+
-          " Where spr_machine_type.type like '%ЩОМ%' or spr_machine_type.type like '%УК%' or spr_machine_type.type like '%ССГ%'  or spr_machine_type.type like '%АДМ%' "+
+          " Where spr_machine_type.type like '%ЩОМ%' or spr_machine_type.type like '%УК%' or spr_machine_type.type like '%АМ%' or spr_machine_type.type like '%ССГ%' or spr_machine_type.type like '%АДМ%' "+
           ' order by spr_machine_type.type, spr_machine_type.modification, askr_machines.zav_nomer;')
         .then(res => {
           client.release();

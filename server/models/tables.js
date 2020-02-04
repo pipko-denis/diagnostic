@@ -146,6 +146,26 @@ module.exports.saveTable = function (data) {
           reject("Ошибка при обработке запроса базой данных: " + e.message + "!");
         });
     });
-  });
+  });  
+};
 
+module.exports.getTableUserName = function (name) {
+  console.log('getTableUserName tableName = ' + name);
+
+  return new Promise(function (resolve, reject) {
+    pool.connect().then(client => {
+      client
+        .query( " SELECT obj_description('public."+name+"'::regclass, 'pg_class');")
+        .then(res => {
+          client.release();
+          console.log('getTableUserName row count', res.rowCount);
+          resolve(res.rows);
+        })
+        .catch(e => {
+          client.release();
+          console.error('getTableUserName query error', e.message, e.stack);
+          reject("Ошибка при обработке запроса базой данных: " + e.message + "!");
+        });
+    });
+  });
 };

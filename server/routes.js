@@ -2,6 +2,7 @@ const paramsController = require('./controllers/ParamsController');
 const tablesController = require('./controllers/TablesController');
 const dictsController = require('./controllers/DictsController');
 const machParamContoller = require('./controllers/MachParamContoller');
+const diagrammContoller = require('./controllers/DiagrammController');
 
 module.exports = app => {
   app.get('/status', (req, res) => {
@@ -18,6 +19,8 @@ module.exports = app => {
   app.post('/tables/', tablesController.saveTable)
 
   app.delete('/tables/:id', tablesController.delTable)
+
+  app.get('/tables/username/:name', tablesController.getTableUserName)
 
   ////////////////////////////////////////////////////////////////////
   app.get('/params/by_table/:table_id', paramsController.getParamsByTable);
@@ -51,9 +54,9 @@ module.exports = app => {
 
 ////////////////////////////////////////////////////////////////////////
 
-  app.get('/diagramm/data/:machine_id/:extCode/:extParam/:dtBeg/:dtEnd', DiagrammContoller.getDiagData);
+  app.get('/diagramm/data/:machine_id/:extCode/:extParam/:dtBeg/:dtEnd', diagrammContoller.getDiagData);
 
-  app.post('/diagramm/dates', DiagrammContoller.getDates);
+  app.post('/diagramm/dates', diagrammContoller.getDates);
 
 ///////////////////////////////////////////////////////////////////////
 
