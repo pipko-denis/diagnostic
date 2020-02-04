@@ -1,5 +1,45 @@
 const { pool } = require('./pool');
 
+
+module.exports.copyParamsByMachineAndType = function (from_id,from_tip,to_id,to_tip) {
+  return new Promise(function (resolve, reject) {    
+    if (!from_tip){
+      console.error('Model copyParamsByMachineAndType error', 'Не указан исходный тип СПС');
+      reject("Ошибка при обработке запроса : Не указан исходный тип СПС!");      
+    }
+    if (!to_tip) {
+      console.error('Model copyParamsByMachineAndType error', 'Не указан конечный тип СПС');
+      reject("Ошибка при обработке запроса : Не указан конечный тип СПС!");
+    }
+    let qWhere = "(m1.tip_id = " + from_tip+") and (m2.id is null) ";
+    if (!from_id) { qWhere += "and(m1.machine_id is null)"; } else { qWhere += "and(m1.machine_id =" + from_id + ")"; }
+
+    let to_id_or_isnull = "";
+    if (!to_id) { to_id_or_isnull += " is null "; } else { to_id_or_isnull += " = " + to_id + ")"; }
+    
+    let str = 'INSERT INTO public.askr_diag_machine(machine_id, tip_id, diag_table_param_id, name, dim_id, presc, coef_q, coef_a, coef_b, min_val, max_val, min_acc_val, acc_val, max_acc_val, description, notify_over, notify_under) '+   
+      'SELECT ' + to_id + ' as machine_id, ' + to_tip + ' as tip_id, m1.diag_table_param_id, m1.name, m1.dim_id, m1.presc, m1.coef_q, m1.coef_a, m1.coef_b, m1.min_val, m1.max_val, m1.min_acc_val, m1.acc_val, m1.max_acc_val, m1.description, m1.notify_over, m1.notify_under FROM public.askr_diag_machine as m1 left join public.askr_diag_machine as m2 on m2.machine_id ' + to_id_or_isnull + ' and m2.tip_id = ' + to_tip +' and m2.diag_table_param_id = m1.diag_table_param_id  Where ' + qWhere + ';'
+    console.log(str);
+    
+    pool.connect().then(client => {
+      client
+        .query(str)
+        .then(res => {
+          client.release();
+          console.log('copyParamsByMachineAndType row count', res.rowCount);//res.rowCount
+          resolve({rowCount: res.rowCount});
+        })
+        .catch(e => {
+          client.release();
+          console.error('copyParamsByMachineAndType query error', e.message, e.stack);
+          reject("Ошибка при обработке запроса базой данных: " + e.message + "!");
+        });
+    });
+    
+  });
+};
+
+
 module.exports.getParamsByMachineType = function (id) {
   return new Promise(function (resolve, reject) {
     pool.connect().then(client => {

@@ -31,6 +31,11 @@ export default {
     return Api().post('/diagramm/dates', {imei: imei, tables: tablesArr});
   },
 
+  machParamsCreateCopy(options) {
+    console.log('SERVICE machParamsCreateCopy', options)
+    return Api().post('/machparam/copy/', options);
+  },
+
   getDiagData(machine_id, extCode, extParam, dtBeg, dtEnd){
     return Api().get('/diagramm/data/' + machine_id + '/' + extCode + '/' + extParam + '/' + dtBeg + '/' + dtEnd)
   },

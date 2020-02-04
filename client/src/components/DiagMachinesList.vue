@@ -530,13 +530,13 @@ import { mdiCheckboxMultipleMarkedOutline } from '@mdi/js';
               .catch(err => {                     
                   this.$store.commit('SET_PROCESSING',false)     
                   this.$store.commit('SET_ERROR',err)    
-                  console.info('paramsList3', err)                     
+                  console.info('getTableFields 1', err)                     
                 }
     
               )
           }catch(err){
             this.$store.commit('SET_PROCESSING',false)
-            console.info('paramsList4', err)            
+            console.info('getTableFields 2', err)            
           }          
           
           

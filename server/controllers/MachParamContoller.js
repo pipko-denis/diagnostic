@@ -4,6 +4,34 @@ const moduleName = 'MachParamContoller';
 
 module.exports = {
 
+   //= function (from_id, from_tip, to_id, to_tip
+  copyParamsByMachineAndType(req, res) {
+
+    if (!req.body) {
+      res.status(400);
+      res.send({ message: `Переданы пустые данные для сохранения!` });
+      return;
+    }
+
+    try {
+      console.log(moduleName, `copyParamsByMachineAndType request begin`, req.body)
+      machparams.copyParamsByMachineAndType(req.body.from_id, req.body.from_tip, req.body.to_id, req.body.to_tip)
+        .then(resolve => {
+          console.log(resolve);
+          res.send(resolve);
+          //console.info("sending resolve", resolve);
+        })
+        .catch(reject => {
+          console.info("status 500", reject);
+          res.status(500).send({ message: reject });
+        })
+    } catch (err) {
+      console.info("status 500 catch")
+      console.log(moduleName, `ERROR`, err)
+      res.status(500).send({ message: `Ошибка получения данных!` });
+    }
+  },
+
   getParamsByMachineType(req, res) {
 
     console.info('req.params[type_id]', req.params['type_id']);

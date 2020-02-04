@@ -116,6 +116,7 @@ import { mdiFormatListBulleted } from '@mdi/js'
 import { mdiContentDuplicate } from '@mdi/js';
 
 import DiagParamsList from '@/components/DiagParamsList'
+import MachParamsService from '../services/MachParamsService'
 //import TableParamsService from '@/services/TableParamsService'
 
 export default {
@@ -269,6 +270,51 @@ export default {
 
       copyParams(){
         this.dialogCopyParams = false;
+        //machParamsCreateCopy(from_id, from_tip, to_id, to_tip)
+
+        if (!this.copyMachType) {
+          alert('Необходимо выбрать исходный тип для копирования!')
+          return
+        }
+
+        if (!this.copyMachTypeFinal) {
+          alert('Необходимо выбрать для копирования в него параметров диагностики!')
+          return
+        }
+        
+        this.$store.commit('SET_PROCESSING',true)  
+        this.$store.commit('SET_ERROR_CLEAN')  
+        console.log({from_id: null, from_tip: this.copyMachType, to_id: null, to_tip: this.copyMachTypeFinal})
+        try{                      
+          MachParamsService.machParamsCreateCopy( {from_id: null, from_tip: this.copyMachType.id, to_id: null, to_tip: this.copyMachTypeFinal})
+            .then(result => {      
+                console.log("COPY RESULT",result.data)
+                this.$store.commit('SET_PROCESSING',false)   
+                this.$store.commit('SET_MESSAGE',"Параметры таблицы загружены")
+                let elem = _.find(this.machTypes,{id: this.copyMachTypeFinal})
+                if (elem) {
+                  let parsed = parseInt(elem.cnt_type_params, 10);
+                  if (isNaN(parsed)) { 
+                    elem.cnt_type_params = result.data.rowCount 
+                  }else {
+                    elem.cnt_type_params = parsed + result.data.rowCount;
+                  }  
+                //this.fieldsList = result.data  
+                }
+              }
+            )
+            .catch(err => {                     
+                this.$store.commit('SET_PROCESSING',false)     
+                this.$store.commit('SET_ERROR',err)    
+                console.info('copyParams 1', err)                     
+              }
+  
+            )
+        }catch(err){
+          this.$store.commit('SET_PROCESSING',false)
+          console.info('copyParams 2', err)            
+        }
+        
       },
 
       save () {        

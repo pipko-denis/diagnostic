@@ -52,6 +52,8 @@ module.exports = app => {
 
   app.delete('/machparam/:id', machParamContoller.delMachParam)
 
+  app.post('/machparam/copy/', machParamContoller.copyParamsByMachineAndType)
+
 ////////////////////////////////////////////////////////////////////////
 
   app.get('/diagramm/data/:machine_id/:extCode/:extParam/:dtBeg/:dtEnd', diagrammContoller.getDiagData);
