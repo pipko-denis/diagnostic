@@ -3,7 +3,7 @@
     <v-card-title>
         <v-layout wrap>
           <v-flex sm12 md6 class="pr-1 pl-1" v-if="propShowSelecors">
-              <v-autocomplete v-model="machTypeId" :items="compMachTypes" label="Тип СПС" item-value="id" item-text="full_name"  clearable >
+              <v-autocomplete v-model="machTypeId" :items="compMachTypes" label="Тип СПС" item-value="id" item-text="full_name"  clearable @change="onAutocompleteMachTypeChange">
                 <template slot="selection" slot-scope="data">
                   {{ data.item.full_name }}
                 </template> 
@@ -13,8 +13,8 @@
               </v-autocomplete>
           </v-flex> 
 
-          <v-flex sm12 md6 class="pr-1 pl-1">
-              <v-autocomplete v-model="machineId" :items="compMachinesByType" label="Наименование СПС" item-value="id" item-text="full_name"  clearable @change="getDiagTables()">
+          <v-flex sm12 md6 class="pr-1 pl-1" v-if="propShowSelecors">
+              <v-autocomplete v-model="machineId" :items="compMachinesByType" label="Наименование СПС" item-value="id" item-text="full_name" clearable @change="getDiagParamsByMachine()">
                 <template slot="selection" slot-scope="data">
                   {{data.item.full_name}}
                 </template> 
@@ -25,7 +25,7 @@
           </v-flex> 
 
           <v-flex sm12 class="pr-1 pl-1">
-              <v-autocomplete v-model="tableProp" :items="diagTableParams" label="Диагностический параметр" item-value="id" item-text="full_name" clearable @change="getEventsForMachine()">
+              <v-autocomplete v-model="tableProp" :items="compDiagTableParams" label="Диагностический параметр" item-value="id" item-text="full_name" clearable @change="getEventsForMachine()">
                 <template slot="selection" slot-scope="data">
                   {{data.item.full_name}}
                 </template> 
@@ -38,9 +38,9 @@
           <v-flex sm9 class="pr-1 pl-1">
             <v-dialog ref="dialog" v-model="modalDat" :return-value.sync="dateRange" persistent width="290px">
               <template v-slot:activator="{ on }">
-                <v-text-field v-model="compDateRangeText" label="Период" :prepend-icon="icoSearch" readonly v-on="on" ></v-text-field>
+                <v-text-field v-model="compDateRangeText" label="Период" :prepend-icon="icoCalendar" readonly v-on="on" ></v-text-field>
               </template>
-              <v-date-picker v-model="dateRange" :events="events"  range scrollable>
+              <v-date-picker v-model="dateRange" :events="compEvents"  range scrollable>
                 <v-spacer></v-spacer>
                 <v-btn text color="primary" @click="modalDat = false">Отмена</v-btn>
                 <v-btn text color="primary" @click="$refs.dialog.save(dateRange)">Применить</v-btn>
@@ -49,21 +49,7 @@
           </v-flex>
           <v-flex sm3 class="pr-1 pl-1">
             <v-btn color="primary" @click="getDataForChart" >Загрузить данные</v-btn>
-          </v-flex>
-<!--
-          <v-flex sm12 class="pr-1 pl-1">
-            <v-dialog ref="dialog" v-model="modalDat" :return-value.sync="dateRange" persistent width="290px">
-              <template v-slot:activator="{ on }">
-                <v-text-field v-model="compDateRangeText" label="Период" :prepend-icon="icoSearch" readonly v-on="on"></v-text-field>
-              </template>
-              <v-date-picker v-model="dateRange" scrollable >
-                <v-spacer></v-spacer>
-                <v-btn text color="primary" @click="modalDat = false">Отмена</v-btn>
-                <v-btn text color="primary" @click="$refs.dialog.save(dateRange)">Применить</v-btn>
-              </v-date-picker>
-            </v-dialog>
-          </v-flex>
--->          
+          </v-flex>      
 
         </v-layout>
     </v-card-title>
@@ -90,6 +76,7 @@
 
   import MachParamsService from '../services/MachParamsService'
   import { mdiMagnify } from '@mdi/js';
+  import { mdiCalendarMonth } from '@mdi/js';
 /*
   var chart = new ApexCharts(
   document.querySelector("#chart"),
@@ -111,6 +98,7 @@
         modalDat: false,  
         dateRange: [],
         icoSearch: mdiMagnify,
+        icoCalendar: mdiCalendarMonth,
         diagData: [],
         chartOptions: 'Test',
         hideZeroes: true,
@@ -124,7 +112,7 @@
         ],
 
         series: [],
-        events: ['2020-01-30','2020-01-18'],
+        events: [],
 
         chartOptions: {
             chart: { type: 'area', height: 350 },
@@ -199,19 +187,21 @@
 
     computed: {      
 
+      compEvents(){
+        return this.events;
+      },
+
       compDiagData(){
         
         if ((this.diagData)&& Array.isArray(this.diagData) && (this.diagData.length > 0)) {          
           
-          if (this.hideZeroes){  
-              
-              var result = []
-              
+          if (this.hideZeroes){                
+
+              var result = []              
               this.diagData.forEach(diagRec => {              
                 if (diagRec.val != "0") {
                 result.push(diagRec) 
-                }                
-
+                }            
               });
             console.log('compDiagData was parsed:', result )              
             return result;
@@ -224,9 +214,6 @@
           console.log('compDiagData is empty array')            
           return [];
         }  
-          
-        
-        
       },
 
       compSeries(){
@@ -247,8 +234,6 @@
              } catch (error) {
                console.log('compSeries parse error', error,diagRec)
              }
-              
-              
 
               // if ((this.hideZeroes)&&(diagRec.val != "0")) {      
               //   resultParsed.push([parseInt(diagRec.dt,10),parseFloat(diagRec.val)])
@@ -321,14 +306,16 @@
         return result;
       },
 
-      compDateRangeText () {
-        /*
-        console.info('dateRange', this.dateRange)
-        if (! this.dateRange ) {
-          this.dateRange = []
-          console.info('dateRange not empty anymore', this.dateRange)
+      compDiagTableParams(){
+        console.log('compDiagTableParams', this.machineId)
+        if (! this.machineId) {          
+          return [];
+        } else{
+          return this.diagTableParams;
         }
-        */
+      },
+
+      compDateRangeText () {
         return (!this.dateRange) ? "" : this.dateRange.join(' ~ ')
       },
 
@@ -336,13 +323,9 @@
 
     methods: {
 
-      formatDate(date){
-        return date.toJSON();
-      },
-
       getDataForChart(){
 
-        if (!this.machineId){
+        if ((!this.machineId)||(this.machineId == -1)){
           alert("Необходимо выбрать СПС!")
           return;
         }
@@ -436,9 +419,15 @@
         console.info('getMachinesFormSrv')
         this.$store.dispatch('GET_SPR_MACHINES_FROM_SRV')
       }, 
-      getDiagTables(){
+      getDiagParamsByMachine(){
         console.log('props',this.machTypeId,this.machineId);
-        if (this.machineId) this.getMachParamsForDiag(this.machineId);
+        if ((this.machineId)||(this.machineId != -1)) this.getMachParamsForDiag(this.machineId);
+      },
+
+      onAutocompleteMachTypeChange(){
+        console.log('onAutocompleteMachTypeChange', 'NULLLS')
+        this.machineId = null;
+        this.tableProp = null;
       },
 
       getEventsForMachine(){        
@@ -458,7 +447,7 @@
         
         if (!this.tableProp) return;
         var tblField = _.find(this.diagTableParams,{ id: this.tableProp})
-        console.log(this.tableProp, tblField,this.diagTableParams)
+        console.log('Получаем даты на которые есть данные',machine.cur_imei,this.tableProp, tblField) //,this.diagTableParams)
 
         if (!tblField) {
           console.log("Table field not founded")
@@ -509,7 +498,7 @@
                   
                   this.$store.commit('SET_PROCESSING',false)   
                   this.$store.commit('SET_MESSAGE',"Параметры таблицы загружены")
-                  console.info('getMachParamsForDiag result',result.data) 
+                  console.info('Получаем список диаг. параметров с сервера')//,result.data) 
                   this.diagTableParams = result.data 
                   //this.getEventsForMachine();
                 }
@@ -517,13 +506,13 @@
               .catch(err => {                     
                   this.$store.commit('SET_PROCESSING',false)     
                   this.$store.commit('SET_ERROR',err)    
-                  console.info('paramsList3', err)                     
+                  console.info('getMachParamsForDiag 1', err)                     
                 }
     
               )
           }catch(err){
             this.$store.commit('SET_PROCESSING',false)
-            console.info('paramsList4', err)            
+            console.info('getMachParamsForDiag 2', err)            
           }
 
 ////////////////////////////////////////////
@@ -548,12 +537,67 @@
     },
 
     watch: {
-      machTypeId(newValue, oldValue) {
-        if (!newValue){          
-          this.machineId = null;
-          this.tableId = null;
-        }
+      /*
+      propMachTypeId(newValue,oldValue){
+        console.log('propMachTypeId',newValue,oldValue)
+        this.machTypeId = newValue;
       },
+      //machineId: this.propMachineId
+      
+      propMachineId(newValue,oldValue){
+        console.log('propMachineId',newValue,oldValue)
+        this.machineId = newValue;
+      },
+      */
+
+      propMachTypeId: { 
+        immediate: true,
+        handler: function(val,ov) {
+          //console.info('WATCH pMachTypeId =' + val + ' old='+ov)
+        console.info('watch propMachineId =' + val + ' old='+ov)
+        this.tableProp = null; 
+        this.diagTableParams = [] ;
+        this.events = [];
+        this.machTypeId = val;   
+        }
+      },      
+      
+      propMachineId: { 
+        immediate: true,
+        handler: function(val,ov) {
+          //console.info('WATCH pMachTypeId =' + val + ' old='+ov)
+        console.info('watch propMachineId =' + val + ' old='+ov)
+        this.tableProp = null; 
+        this.diagTableParams = [] ;
+        this.events = [];
+        this.machineId = val;   
+        this.getDiagParamsByMachine();
+        }
+      },     
+      /**/
+/*
+      propTableProp(newValue,oldValue){
+        console.log('propTableProp',newValue,oldValue)
+        this.tableProp = newValue;
+      },
+
+      machTypeId(newValue, oldValue) {
+        console.log('machTypeId', newValue, oldValue)
+        //if (!newValue){          
+          //this.machineId = -1;
+          this.tableProp = null; 
+          this.diagTableParams = [] ;
+          this.events = [];
+        //}
+      },
+      machineId(newValue, oldValue){
+        console.log('machineId',newValue, oldValue)
+        this.tableProp = null;
+        this.diagTableParams = [];
+        this.events = [];
+        this.getDiagTables();
+      },
+*/
       tableProp(newValue, oldValue) {
         if (newValue){
           this.events = [new Date().toISOString().slice(10)]

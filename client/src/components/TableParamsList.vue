@@ -247,7 +247,7 @@ import { mdiCheckboxMultipleMarkedOutline } from '@mdi/js';
         }
       },
 
-      pTableId: {
+      pTableId: { 
         immediate: true,
         handler: function(val,ov) {
           //console.info('WATCH pMachTypeId =' + val + ' old='+ov)

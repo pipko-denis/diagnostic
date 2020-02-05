@@ -27,7 +27,7 @@ export default {
   },
 
   getDatesForDiag(options){
-    console.log('SERVICE getDatesForDiag', options)
+    //console.log('SERVICE getDatesForDiag', options)
     return Api().post('/diagramm/dates', options);
   },
 

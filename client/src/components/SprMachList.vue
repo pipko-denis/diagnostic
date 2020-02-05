@@ -58,6 +58,25 @@
           </v-card-text>
         </v-card>
       </v-dialog>
+
+
+      <v-dialog v-model="dialogChartCard" fullscreen hide-overlay transition>
+
+        <v-toolbar dark color="primary">
+          <v-btn icon dark @click="closeChartCard">
+            <v-icon>{{icoClose}}</v-icon>
+          </v-btn>
+          <v-toolbar-title>{{ formChartTitle }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+        </v-toolbar> 
+
+        <chart-card  
+                  :propShowSelecors="false"
+                  :propMachTypeId="chartMachTypeId"
+                  :propMachineId="chartMachineId"
+        ></chart-card>
+      </v-dialog>
+
     </v-toolbar>
     
     <v-data-table :headers="headers" :items="machines" :search="search"  footer-props.items-per-page-text="Строк на странице"
@@ -69,6 +88,7 @@
 
     <template v-slot:item.action="{ item }">
       <v-icon small class="mr-2" @click="editItem(item)">{{icoEdit}}</v-icon>
+      <v-icon small class="mr-2" @click="showChartCard(item)">{{icoChart}}</v-icon>      
     </template>
 
     </v-data-table>
@@ -84,13 +104,16 @@ import { mdiPencil } from '@mdi/js'
 import { mdiDelete } from '@mdi/js'
 import { mdiClose } from '@mdi/js'
 import { mdiFormatListBulleted } from '@mdi/js'
+import { mdiChartAreaspline } from '@mdi/js';
 
 import DiagParamsList from '@/components/DiagParamsList'
+import ChartCard from '@/components/ChartCard'
 //import TableParamsService from '@/services/TableParamsService'
 
 export default {
     components: {
       DiagParamsList,
+      ChartCard,
     },
 
     mounted() {
@@ -104,6 +127,7 @@ export default {
       selectedMachTypeId: -1,
       selectedMachineId: -1,
       dialog: false,
+      dialogChartCard: false,
       search: null,
       icoSearch: mdiMagnify,
       icoAdd: mdiPlus,
@@ -111,6 +135,7 @@ export default {
       icoEdit: mdiPencil,
       icoClose: mdiClose,
       icoRadioList: mdiFormatListBulleted,
+      icoChart: mdiChartAreaspline,
       headers: [
         {text: 'ID',align: 'left',sortable: true, value: 'id'},
         { text: '', align: 'left',value: 'action', sortable: false },
@@ -149,24 +174,40 @@ export default {
       },
       lstDelParams: [],
       lstParams: [],     
+
+      chartItem: null,
+      chartMachTypeId: null,
+      chartMachineId: null,
+
+
     }),
 
 
 
     computed: {
         formTitle () {
-            return (this.editedIndex === -1 ? 'Добавление параметров машины ' : 'Редактирование параметров машины') + ' ' + (this.editedItem.type || '')  + ' ' + (this.editedItem.modification || '') + ' №' + (this.editedItem.zav_nomer || '') 
+            return (this.editedIndex === -1 ? 'Добавление параметров СПС ' : 'Редактирование параметров СПС') + ' ' + (this.editedItem.type || '')  + ' ' + (this.editedItem.modification || '') + ' №' + (this.editedItem.zav_nomer || '') 
         },
         machines(){
             console.info('machines', this.$store.getters.getMachines)
             return this.$store.getters.getMachines
         },
+
+        formChartTitle(){
+          if (!this.chartItem) return ''
+          else return 'Диаграммы по СПС: '+ ' "' + (this.chartItem.type || '')  + ' ' + (this.chartItem.modification || '') + '",  заводской №' + (this.chartItem.zav_nomer || '')
+        }
     },
 
     watch: {
       dialog (val) {
         val || this.close()
       },
+
+      dialogChartCard (val) {
+        val || this.closeChartCard()
+      },
+
     },
 
     methods: {
@@ -199,6 +240,16 @@ export default {
         this.dialog = true
       },
 
+      showChartCard(item){        
+        console.info('Show chart card tip='+item.tip+' id='+item.id);
+
+        this.chartItem = item
+        this.chartMachTypeId = item.tip
+        this.chartMachineId = item.id      
+        this.dialogChartCard = true
+
+      },
+
 
 
       close () {
@@ -208,6 +259,15 @@ export default {
           this.editedIndex = -1
           this.selectedMachTypeId = -1
           this.selectedMachineId = -1
+        }, 300)
+      },
+
+      closeChartCard(){
+        this.dialogChartCard = false;
+        setTimeout(() => {
+          this.chartItem = null
+          this.chartMachTypeId = -1
+          this.chartMachineId = -1
         }, 300)
       },
 
