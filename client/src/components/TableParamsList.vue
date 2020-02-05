@@ -232,21 +232,29 @@ import { mdiCheckboxMultipleMarkedOutline } from '@mdi/js';
 
     },
 
+    mounted() {
+      this.paramsList = []
+    },
+
     watch: {
       dialog (val) {
         val || this.close()
       },
 
+      pTableName(val){
+        if (!val) {
+          this.paramsList = []
+        }
+      },
 
       pTableId: {
         immediate: true,
         handler: function(val,ov) {
           //console.info('WATCH pMachTypeId =' + val + ' old='+ov)
         console.info('watch pTableId =' + val + ' old='+ov)
+        this.paramsList = []
         if (val > 0){
           this.getParamsList()
-        }else{
-          this.paramsList = []
         }
 
         this.lstParamsRemoveFromSrv = [] 
