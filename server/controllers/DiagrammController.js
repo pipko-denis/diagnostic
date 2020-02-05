@@ -1,4 +1,4 @@
-const machparams = require('../models/machparams')
+const diagramm = require('../models/diagramm')
 
 const moduleName = 'DiagrammContoller';
 
@@ -10,7 +10,7 @@ module.exports = {
 
     try {
       console.log(moduleName, `get getDiagData `, `request begin`)
-      machparams.getDiagData(req.params['machine_id'], req.params['extCode'], req.params['extParam'], req.params['dtBeg'], req.params['dtEnd'])
+      diagramm.getDiagData(req.params['machine_id'], req.params['extCode'], req.params['extParam'], req.params['dtBeg'], req.params['dtEnd'])
         .then(resolve => {
           res.send(resolve)
         })
@@ -33,12 +33,12 @@ module.exports = {
       return;
     }
 
-    console.info(moduleName, 'saveParam begin', req.body);
+    console.info(moduleName, 'getDates begin', req.body);
 
     try {
-      machparams.saveParam(req.body)
+      diagramm.getDates(req.body)
         .then(resolve => {
-          console.log(moduleName, 'saveParam result', resolve);
+          console.log(moduleName, 'getDates result', resolve.length);
           res.send(resolve)
         })
         .catch(reject => {

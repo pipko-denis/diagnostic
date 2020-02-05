@@ -26,9 +26,9 @@ export default {
     return Api().get('/machparam/diag/' + machineid)
   },
 
-  getDatesForDiag(imei,tablesArr){
-    console.log('SERVICE getDatesForDiag', imei, tablesArr)
-    return Api().post('/diagramm/dates', {imei: imei, tables: tablesArr});
+  getDatesForDiag(options){
+    console.log('SERVICE getDatesForDiag', options)
+    return Api().post('/diagramm/dates', options);
   },
 
   machParamsCreateCopy(options) {

@@ -159,34 +159,6 @@ module.exports.getParamsForDiag = function (id) {
   });
 };
 
-module.exports.getDiagData = function (machine_id,extCode,extParam,dtBeg,dtEnd) {
-  return new Promise(function (resolve, reject) {
-    pool.connect().then(client => {
-      console.log("query begin", "SELECT dt,val,cycl_dt , to_char(cycl_dt, 'DD-MM-YYYY HH24:MI:SS') as cycl_dt2,uin,uout /**/  FROM public.askr_cycles_diag_by_period_machine (" + machine_id + "," + extCode + "," + extParam + ", '" + dtBeg + "','" + dtEnd + "');")
-      client
-        .query("SELECT dt,val,cycl_dt as cycl_dt2, to_char(cycl_dt, 'DD-MM-YYYY HH24:MI:SS') as cycl_dt,uin,uout /**/  FROM public.askr_cycles_diag_by_period_machine (" + machine_id + "," + extCode +","+extParam+", '"+dtBeg+"','"+dtEnd+"');")
-        .then(res => {
-          client.release();
-          console.log('getDiagData row count', res.rowCount);
-          resolve(res.rows);
-          /*
-            if (res.rowCount === 0) {
-              console.error("Ни одной записи по указанному параметру не найдено!");
-              reject("Ни одной записи по указанному параметру не найдено!");
-            } else {
-              resolve(res.rows);
-            }
-            */
-        })
-        .catch(e => {
-          client.release();
-          console.error('getDiagData query error', e.message, e.stack);
-          reject("Ошибка при обработке запроса базой данных: " + e.message + "!");
-        });
-    });
-  });
-};
-
 
 module.exports.delMachParam = function (id) {
 

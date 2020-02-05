@@ -25,7 +25,7 @@
           </v-flex> 
 
           <v-flex sm12 class="pr-1 pl-1">
-              <v-autocomplete v-model="tableProp" :items="diagTableParams" label="Диагностический параметр" item-value="id" item-text="full_name"  clearable >
+              <v-autocomplete v-model="tableProp" :items="diagTableParams" label="Диагностический параметр" item-value="id" item-text="full_name" clearable @change="getEventsForMachine()">
                 <template slot="selection" slot-scope="data">
                   {{data.item.full_name}}
                 </template> 
@@ -442,27 +442,42 @@
       },
 
       getEventsForMachine(){        
+        /*
         var tables = _.uniqBy(this.diagTableParams, 'tbl_name');           
 
         var cloneElem = (elem) =>  Object.assign({},{name: elem.tbl_name, dt: elem.dt_field});
         var cloneArr = tables.map(cloneElem);        
-        //console.log(tables,cloneArr,this.machineId);
-        let machine = _.find(this.$store.getters.getMachines ,{id: this.machineId}) 
+        //console.log(tables,cloneArr,this.machineId);        
+        */
+
+       let machine = _.find(this.$store.getters.getMachines ,{id: this.machineId}) 
         if ((!machine)||(! machine.cur_imei)){
           console.log("Machine or it's imei not founded")
+          return;
+        }
+        
+        if (!this.tableProp) return;
+        var tblField = _.find(this.diagTableParams,{ id: this.tableProp})
+        console.log(this.tableProp, tblField,this.diagTableParams)
+
+        if (!tblField) {
+          console.log("Table field not founded")
           return;
         }
 
         this.$store.commit('SET_PROCESSING',true)
         this.$store.commit('SET_ERROR_CLEAN')  
         try{                      
-          MachParamsService.getDatesForDiag(machine.cur_imei,cloneArr)
+          MachParamsService.getDatesForDiag({imei: machine.cur_imei, name: tblField.tbl_name, dt: tblField.dt_field}) //cloneArr)
             .then(result => {      
                 
                 this.$store.commit('SET_PROCESSING',false)   
                 this.$store.commit('SET_MESSAGE',"Список дат для машины "+this.machineId+" загружен.")
-                console.info('getEventsForMachine result',result.data) 
-                //this.diagTableParams = result.data 
+                //console.info('getEventsForMachine result',result.data) 
+                var cloneElem = (elem) =>  elem.dt;
+                var cloneArr = result.data.map(cloneElem);
+                console.info(cloneArr);
+                this.events = cloneArr
               }
             )
             .catch(err => {                     
@@ -496,7 +511,7 @@
                   this.$store.commit('SET_MESSAGE',"Параметры таблицы загружены")
                   console.info('getMachParamsForDiag result',result.data) 
                   this.diagTableParams = result.data 
-                  this.getEventsForMachine();
+                  //this.getEventsForMachine();
                 }
               )
               .catch(err => {                     
