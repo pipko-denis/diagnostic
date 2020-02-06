@@ -52,5 +52,27 @@ module.exports = {
 
   },  
 
+  
+  getImeiPeriodData(req, res) {
+
+    console.info(moduleName, 'getImeiPeriodData begin', req.params['tableName'], req.params['dt_field']);
+
+    try {
+      diagramm.getImeiPeriodData(req.params['tableName'], req.params['dt_field'])
+        .then(resolve => {
+          console.log(moduleName, 'getImeiPeriodData result', resolve.length);
+          res.send(resolve)
+        })
+        .catch(reject => {
+          res.status(500);
+          res.send({ message: reject });
+        })
+    } catch (err) {
+      console.log(moduleName, `ERROR`, err)
+      res.status(500).send({ message: `Ошибка получения данных!` });
+    }
+
+  },    
+
 
 }

@@ -60,6 +60,8 @@ module.exports = app => {
 
   app.post('/diagramm/dates', diagrammContoller.getDates);
 
+  app.get('/diagramm/periods/:tableName/:dt_field', diagrammContoller.getImeiPeriodData);  
+
 ///////////////////////////////////////////////////////////////////////
 
   app.get('/dicts/machines', dictsController.getMachines)

@@ -88,7 +88,8 @@
 
     <template v-slot:item.action="{ item }">
       <v-icon small class="mr-2" @click="editItem(item)">{{icoEdit}}</v-icon>
-      <v-icon small class="mr-2" @click="showChartCard(item)">{{icoChart}}</v-icon>      
+      <v-icon small class="mr-2" @click="showChartCard(item)">{{icoChart}}</v-icon> 
+      <v-icon small class="mr-2" @click="sowCurrentPositionOnMap(item)">{{icoMap}}</v-icon>       
     </template>
 
     </v-data-table>
@@ -105,6 +106,7 @@ import { mdiDelete } from '@mdi/js'
 import { mdiClose } from '@mdi/js'
 import { mdiFormatListBulleted } from '@mdi/js'
 import { mdiChartAreaspline } from '@mdi/js';
+import { mdiMapMarkerOutline } from '@mdi/js';
 
 import DiagParamsList from '@/components/DiagParamsList'
 import ChartCard from '@/components/ChartCard'
@@ -136,6 +138,7 @@ export default {
       icoClose: mdiClose,
       icoRadioList: mdiFormatListBulleted,
       icoChart: mdiChartAreaspline,
+      icoMap: mdiMapMarkerOutline,
       headers: [
         {text: 'ID',align: 'left',sortable: true, value: 'id'},
         { text: '', align: 'left',value: 'action', sortable: false },
@@ -216,6 +219,9 @@ export default {
       lstDtFields: [],
       selectedDtField = null,
       */
+     sowCurrentPositionOnMap(machine){
+       if (machine) alert(" Показываем машину на карте id=" + machine)
+     },
 
       changedMtDiagParams(event){
           this.lstParams = event

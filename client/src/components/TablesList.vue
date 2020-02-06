@@ -31,7 +31,7 @@
             <v-divider class="mx-0 primary" horizontal></v-divider>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn class="primary white--text" @click="setDtField">Применить</v-btn>
+              <v-btn class="primary white--text" :disabled="!selectedDtField" @click="setDtField">Применить</v-btn>
               <v-btn   @click="closeDtDialog">Отмена</v-btn>            
             </v-card-actions>          
           </v-card>                    
@@ -82,6 +82,41 @@
         </v-card>
       </v-dialog>
     </v-toolbar>
+
+    <v-dialog v-model="dialogImeiPeriods" scrollable  max-width="450px"> 
+      <v-card tile height="450px">           
+        <v-card-title class="secondary white--text" >            
+          <span class="headline">Сводка по содержимому таблицы</span>   
+          <v-text-field v-model="imeiPeriodDataSearch" label="Поиск" class="white--text" ></v-text-field>     
+        </v-card-title>
+        <v-divider class="mx-0 primary" horizontal></v-divider>
+        <v-card-text>
+
+          <v-container fluid fill-height v-if="loadingImeiPeriods">
+            <v-layout flex align-center justify-center>
+              <v-progress-circular indeterminate color="primary" ></v-progress-circular> 
+            </v-layout>
+          </v-container>
+
+          
+          <v-list v-if="!loadingImeiPeriods" >
+            <v-list-item v-for="(item,i) in compImeiPeriodData" :key="`imeiperdt${i}`" > <!--v-if="showListItem(item)"-->
+              <v-list-item-content >
+                <v-list-item-title>{{item.train}}</v-list-item-title>
+                <v-list-item-subtitle>Начало периода: {{item.dtfrom}}</v-list-item-subtitle>
+                <v-list-item-subtitle>Конец периода: {{item.dtto}}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>               
+          </v-list>
+              
+        </v-card-text>
+        <v-divider class="mx-0 primary" horizontal></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn   @click="closeImeiPeriodsDialog">Закрыть</v-btn>            
+        </v-card-actions>          
+      </v-card>                    
+    </v-dialog> 
     
     <v-data-table :headers="headers" :items="tables" :search="search"  footer-props.items-per-page-text="Строк на странице"
         no-data-text="Данные отсутствуют" no-results-text="Ничего не найдено">
@@ -99,8 +134,9 @@
 
 
     <template v-slot:item.action="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">{{icoEdit}}</v-icon>
-      <v-icon small @click="deleteItem(item)">{{icoDel}}</v-icon>
+      <v-icon small class="mr-2" @click="editItem(item)">{{icoEdit}}</v-icon>      
+      <v-icon small class="mr-2" @click="showImeiPeriodsDialog(item)">{{icoEye}}</v-icon>      
+      <v-icon small class="mr-2" @click="deleteItem(item)">{{icoDel}}</v-icon>
     </template>
 
     </v-data-table>
@@ -117,9 +153,11 @@ import { mdiDelete } from '@mdi/js'
 import { mdiClose } from '@mdi/js'
 import { mdiFormatListBulleted } from '@mdi/js'
 import { mdiCommentQuestion } from '@mdi/js';
+import { mdiEye } from '@mdi/js';
 
 import TableParamsList from '@/components/TableParamsList'
 import TableParamsService from '@/services/TableParamsService'
+import MachParamsService from '@/services/MachParamsService'
 
 export default {
     components: {
@@ -128,6 +166,9 @@ export default {
     data: () => ({
       selectedTableId: -1,
       dialog: false,
+      dialogImeiPeriods: false,
+      loadingImeiPeriods: false,
+      imeiPeriodData: [],
       search: null,
       icoSearch: mdiMagnify,
       icoAdd: mdiPlus,
@@ -136,6 +177,8 @@ export default {
       icoClose: mdiClose,
       icoRadioList: mdiFormatListBulleted,
       icoQuest: mdiCommentQuestion,
+      icoEye: mdiEye,
+
       maskExtCode: "####",
       rowsPerPageItems: [/*25,50,*/{"text":"Все","value":-1}],
       headers: [
@@ -169,7 +212,7 @@ export default {
       dialogDt: false,
       lstDtFields: [],
       selectedDtField: null,
-      
+      imeiPeriodDataSearch:null,
     }),
 
 
@@ -182,6 +225,37 @@ export default {
             console.info('tables', this.$store.getters.getTables)
             return this.$store.getters.getTables
         },
+
+/*
+        compData(){
+          this.imeiPeriodData.forEach(element => {
+            element.train = this.getCarByImei(element);
+          });
+          console.log('compData', this.imeiPeriodData)
+        },
+*/
+        compImeiPeriodData(){
+          /*
+          this.imeiPeriodData.forEach(element => {
+            element.train = this.getCarByImei(element);
+          });
+          console.log('ARR', this.imeiPeriodData)
+*/
+          var param = (this.imeiPeriodDataSearch || '');
+          console.log('compImeiPeriodData', this.imeiPeriodData)
+          var results = _.filter(this.imeiPeriodData,function(obj) {
+            //console.log('compImeiPeriodData', obj.imei)
+            return ((obj.imei.indexOf(param) !== -1)||(obj.train.toUpperCase().indexOf(param.toUpperCase()) !== -1));
+          });
+
+          
+
+          return results;
+          
+         //return this.imeiPeriodData;
+       
+        },
+        
     },
 
     watch: {
@@ -196,6 +270,20 @@ export default {
       lstDtFields: [],
       selectedDtField = null,
       */
+
+     showListItem(item){
+       if (item.imei.includes(this.imeiPeriodDataSearch)) return true;
+       else return false;
+     },
+
+     getCarByImei(imei){
+          var machines = this.$store.getters.getMachines;
+          var machine = _.find(machines,{cur_imei: imei});
+          //console.log('MACHINES',machines, imei)
+          if (machine) {
+            return (machine.type || '')  + ' ' + (machine.modification || '') + ' №' + (machine.zav_nomer || '') + ', imei: '+ imei
+          } else return imei;
+      },
 
       getFieldDescr(item){
         return item.column_name + " (" + item.column_comment + ") " + item.data_type
@@ -292,6 +380,52 @@ export default {
         this.$store.dispatch('GET_TABLES_FROM_SRV')            
       },
 
+
+      showImeiPeriodsDialog(item){
+        console.log('showImeiPeriodsDialog', item);
+        this.dialogImeiPeriods = true;
+        this.loadingImeiPeriods = true;
+
+
+        //getImeiPeriodData(tableName, pack_dt)
+        //this.loadingImeiPeriods = true;
+        this.$store.commit('SET_PROCESSING',true)
+        this.$store.commit('SET_ERROR_CLEAN')  
+        try{                      
+          MachParamsService.getImeiPeriodData(item.tbl_name,item.dt_field) //cloneArr)
+            .then(result => {      
+                
+                this.$store.commit('SET_PROCESSING',false)   
+                this.$store.commit('SET_MESSAGE',"Список дат и машин для таблицы "+item.tbl_name+" загружен.")
+                console.info('showImeiPeriodsDialog result',result.data) 
+                
+                result.data.forEach(element => {
+                  element.train = this.getCarByImei(element.imei);
+                });
+
+                this.imeiPeriodData = result.data
+                this.loadingImeiPeriods = false;
+              }
+            )
+            .catch(err => {                     
+                this.$store.commit('SET_PROCESSING',false)     
+                this.$store.commit('SET_ERROR',err)    
+                console.info('showImeiPeriodsDialog error 1', err) 
+                this.loadingImeiPeriods = false;
+              }
+  
+            )
+          }catch(err){
+            this.$store.commit('SET_PROCESSING',false)
+            console.info('showImeiPeriodsDialog error 2', err)   
+            this.loadingImeiPeriods = false;         
+          }        
+      },
+
+      closeImeiPeriodsDialog(){
+        this.dialogImeiPeriods = false;
+      },
+
       editItem (item) {
         this.editedIndex = this.tables.indexOf(item)
         this.editedItem = Object.assign({}, item)
@@ -331,6 +465,12 @@ export default {
 
     mounted() {
         this.getTablesFormSrv()
+        if ((!this.$store.getters.getMachines)||
+        ((Array.isArray(this.$store.getters.getMachines))&&(this.$store.getters.getMachines.length == 0)))
+            {
+              console.log('MOUNTED GET_SPR_MACHINES_FROM_SRV')
+              this.$store.dispatch('GET_SPR_MACHINES_FROM_SRV') 
+            }
     },
 
   }

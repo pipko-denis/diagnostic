@@ -31,6 +31,11 @@ export default {
     return Api().post('/diagramm/dates', options);
   },
 
+  getImeiPeriodData(tableName, dt_field) {
+    //console.log('SERVICE getImeiPeriodData', tableName + '/' + pack_dt)
+    return Api().get('/diagramm/periods/' + tableName + '/' + dt_field);
+  },  
+
   machParamsCreateCopy(options) {
     console.log('SERVICE machParamsCreateCopy', options)
     return Api().post('/machparam/copy/', options);

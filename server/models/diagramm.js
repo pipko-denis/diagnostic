@@ -69,3 +69,25 @@ module.exports.getDates = function (params) {
     
   });
 };
+
+
+module.exports.getImeiPeriodData = function (tableName, pack_dt) {
+  return new Promise(function (resolve, reject) {
+    pool.connect().then(client => {
+      client
+        .query("SELECT imei, cast(cast(max(" + pack_dt + ") as date) as character varying) as dtto, cast(cast(min(" + pack_dt +") as date) as character varying) as dtfrom FROM public." + tableName + " group by imei;")
+        .then(res => {
+          client.release();
+          console.log('getDiagData row count', res.rows);
+          resolve(res.rows);
+
+        })
+        .catch(e => {
+          client.release();
+          console.error('getDiagData query error', e.message, e.stack);
+          reject("Ошибка при обработке запроса базой данных: " + e.message + "!");
+        });
+    });
+
+  });
+};
